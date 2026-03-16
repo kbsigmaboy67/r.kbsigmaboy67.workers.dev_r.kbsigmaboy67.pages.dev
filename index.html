@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="description" content="$[01110010] — JS Terminal">
+<meta name="theme-color" content="#000000">
+<meta name="color-scheme" content="dark">
+<meta property="og:title" content="$[01110010]">
+<meta property="og:description" content="JS Terminal — r.kbsigmaboy67.pages.dev">
+<meta property="og:type" content="website">
+<meta name="robots" content="noindex">
+<title>$[01110010]</title>
+<link rel="icon" type="image/png" href="https://754-psi.vercel.app/%7B%E2%88%95%7D.png">
+<style>
+  :root {
+    --red: #ff2233;
+    --red-dim: #cc1122;
+    --red-glow: #ff223366;
+    --blue: #0066ff;
+    --blue-dim: #0044cc;
+    --blue-glow: #0066ff44;
+    --cyan: #00aaff;
+    --black: #000000;
+    --bg: #000000;
+    --bg2: #050508;
+    --border: #1a0a0a;
+    --text: #cc3344;
+    --text2: #4477ff;
+    --muted: #331122;
+    --font-mono: 'Courier New', 'Lucida Console', monospace;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    width: 100%; height: 100%;
+    background: var(--black);
+    color: var(--text);
+    font-family: var(--font-mono);
+    overflow: hidden;
+  }
+
+  /* SCANLINES OVERLAY */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,0,0,0.18) 2px,
+      rgba(0,0,0,0.18) 4px
+    );
+    pointer-events: none;
+    z-index: 9999;
+    animation: scanroll 8s linear infinite;
+  }
+
+  /* CRT FLICKER */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(ellipse at center, transparent 60%, rgba(0,0,0,0.7) 100%);
+    pointer-events: none;
+    z-index: 9998;
+    animation: flicker 0.15s infinite;
+  }
+
+  @keyframes scanroll {
+    0% { background-position: 0 0; }
+    100% { background-position: 0 100px; }
+  }
+
+  @keyframes flicker {
+    0%,100% { opacity: 1; }
+    50% { opacity: 0.97; }
+    25%,75% { opacity: 0.99; }
+  }
+
+  /* LAYOUT */
+  #app {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    width: 100vw;
+    background: var(--black);
+    position: relative;
+    z-index: 1;
+  }
+
+  /* TITLE BAR */
+  #titlebar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 32px;
+    background: #0a0000;
+    border-bottom: 1px solid var(--red-dim);
+    padding: 0 12px;
+    flex-shrink: 0;
+    box-shadow: 0 1px 12px var(--red-glow);
+    user-select: none;
+  }
+
+  #titlebar .logo {
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: var(--red);
+    text-shadow: 0 0 8px var(--red), 0 0 20px var(--red-dim);
+    font-weight: bold;
+  }
+
+  #titlebar .title-center {
+    font-size: 11px;
+    color: #441122;
+    letter-spacing: 5px;
+  }
+
+  #titlebar .winctrl {
+    display: flex; gap: 6px; align-items: center;
+  }
+  #titlebar .winctrl span {
+    width: 12px; height: 12px; border-radius: 50%;
+    display: inline-block; cursor: pointer;
+    transition: filter 0.2s;
+  }
+  #titlebar .winctrl span:hover { filter: brightness(1.5); }
+  .wc-close { background: var(--red); box-shadow: 0 0 6px var(--red); }
+  .wc-min   { background: #ff6600; box-shadow: 0 0 6px #ff660066; }
+  .wc-max   { background: var(--blue); box-shadow: 0 0 6px var(--blue-glow); }
+
+  /* MENU BAR */
+  #menubar {
+    display: flex;
+    align-items: center;
+    height: 26px;
+    background: #030000;
+    border-bottom: 1px solid #1a0505;
+    padding: 0 8px;
+    flex-shrink: 0;
+    gap: 2px;
+  }
+
+  .menu-item {
+    font-size: 12px;
+    color: #882233;
+    padding: 2px 10px;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: background 0.15s, color 0.15s;
+    letter-spacing: 1px;
+  }
+  .menu-item:hover {
+    background: #1a0505;
+    color: var(--red);
+    text-shadow: 0 0 6px var(--red);
+  }
+
+  /* TABS */
+  #tabs {
+    display: flex;
+    align-items: flex-end;
+    height: 36px;
+    background: #020000;
+    border-bottom: 1px solid #220a0a;
+    padding: 0 0 0 8px;
+    flex-shrink: 0;
+    gap: 1px;
+  }
+
+  .tab {
+    display: flex; align-items: center; gap: 6px;
+    padding: 6px 14px 6px 10px;
+    font-size: 12px;
+    cursor: pointer;
+    border-radius: 4px 4px 0 0;
+    border: 1px solid transparent;
+    border-bottom: none;
+    color: #662233;
+    transition: all 0.15s;
+    position: relative;
+    top: 1px;
+    letter-spacing: 0.5px;
+  }
+
+  .tab.active {
+    background: #0a0000;
+    border-color: #440011;
+    color: var(--red);
+    text-shadow: 0 0 8px var(--red-dim);
+    border-bottom: 1px solid #0a0000;
+  }
+
+  .tab:not(.active):hover {
+    background: #080000;
+    color: #993344;
+  }
+
+  .tab .tab-icon { color: var(--blue); font-size: 10px; }
+  .tab.active .tab-icon { color: var(--cyan); text-shadow: 0 0 6px var(--cyan); }
+
+  /* EDITOR + PANEL SPLIT */
+  #workspace {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  #editor-area {
+    flex: 1;
+    min-height: 0;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Monaco color overrides — red/blue/black hacker */
+  #editor-area .monaco-editor,
+  #editor-area .monaco-editor .overflow-guard {
+    background: #000000 !important;
+  }
+
+  #editor-area .monaco-editor .margin,
+  #editor-area .monaco-editor .glyph-margin {
+    background: #030000 !important;
+  }
+
+  #editor-area .monaco-editor .current-line {
+    border: none !important;
+    background: rgba(0, 40, 80, 0.35) !important;
+  }
+
+  #editor-area .monaco-editor .line-numbers {
+    color: #441122 !important;
+  }
+
+  #editor-area .monaco-editor .cursor {
+    background: var(--red) !important;
+    border-color: var(--red) !important;
+    box-shadow: 0 0 8px var(--red) !important;
+  }
+
+  #editor-area .monaco-editor .selected-text {
+    background: rgba(0, 60, 160, 0.4) !important;
+  }
+
+  #editor-area .monaco-editor .scroll-decoration {
+    box-shadow: none !important;
+  }
+
+  /* TERMINAL PANEL */
+  #terminal-panel {
+    height: 220px;
+    min-height: 80px;
+    display: flex;
+    flex-direction: column;
+    background: #000000;
+    border-top: 1px solid #330011;
+    flex-shrink: 0;
+    box-shadow: 0 -2px 20px rgba(255,20,40,0.08);
+  }
+
+  #terminal-tabs {
+    display: flex;
+    align-items: center;
+    height: 30px;
+    background: #040000;
+    border-bottom: 1px solid #1a0505;
+    padding: 0 8px;
+    gap: 2px;
+    flex-shrink: 0;
+  }
+
+  .term-tab {
+    font-size: 11px;
+    color: #441122;
+    padding: 3px 12px;
+    cursor: pointer;
+    border-radius: 3px;
+    letter-spacing: 1px;
+    transition: all 0.15s;
+  }
+  .term-tab.active {
+    background: #0a0000;
+    color: var(--red);
+    text-shadow: 0 0 6px var(--red-dim);
+    border: 1px solid #330011;
+  }
+  .term-tab:not(.active):hover { color: #882233; background: #0a0000; }
+
+  .term-actions {
+    margin-left: auto; display: flex; gap: 4px; align-items: center;
+  }
+  .term-btn {
+    font-size: 10px; color: #442233; cursor: pointer; padding: 2px 8px;
+    border-radius: 2px; border: 1px solid #220011; background: transparent;
+    font-family: var(--font-mono); transition: all 0.15s; letter-spacing: 1px;
+  }
+  .term-btn:hover {
+    color: var(--red); border-color: var(--red-dim);
+    background: #0a0000; text-shadow: 0 0 6px var(--red-dim);
+  }
+  #run-btn {
+    color: var(--blue); border-color: #002244;
+    text-shadow: 0 0 6px var(--blue-dim);
+  }
+  #run-btn:hover {
+    color: var(--cyan); border-color: var(--blue); background: #000a1a;
+    text-shadow: 0 0 10px var(--cyan);
+  }
+
+  /* OUTPUT */
+  #output {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px 14px;
+    font-size: 12.5px;
+    line-height: 1.6;
+    font-family: var(--font-mono);
+    color: #ee2244;
+    background: #000000;
+  }
+
+  #output::-webkit-scrollbar { width: 4px; }
+  #output::-webkit-scrollbar-track { background: #000; }
+  #output::-webkit-scrollbar-thumb { background: #330011; border-radius: 2px; }
+  #output::-webkit-scrollbar-thumb:hover { background: var(--red-dim); }
+
+  .out-line { display: block; white-space: pre-wrap; word-break: break-all; }
+  .out-log   { color: #cc2233; }
+  .out-info  { color: #0066ff; text-shadow: 0 0 4px #003388; }
+  .out-warn  { color: #ff6600; text-shadow: 0 0 4px #663300; }
+  .out-error { color: #ff0022; text-shadow: 0 0 6px #ff002244; font-weight: bold; }
+  .out-result{ color: #4499ff; text-shadow: 0 0 4px #2255aa; }
+  .out-system{ color: #441122; letter-spacing: 1px; }
+  .out-prompt{ color: #331122; }
+
+  /* RESIZE HANDLE */
+  #resize-handle {
+    height: 4px;
+    background: transparent;
+    cursor: ns-resize;
+    flex-shrink: 0;
+    border-top: 1px solid #220a0a;
+    transition: background 0.15s;
+  }
+  #resize-handle:hover { background: #330011; }
+
+  /* STATUSBAR */
+  #statusbar {
+    display: flex;
+    align-items: center;
+    height: 22px;
+    background: #0a0000;
+    border-top: 1px solid #330011;
+    padding: 0 12px;
+    flex-shrink: 0;
+    font-size: 10px;
+    color: #441122;
+    letter-spacing: 1px;
+    gap: 16px;
+    box-shadow: 0 -1px 10px rgba(255,20,40,0.1);
+  }
+
+  .status-item { display: flex; align-items: center; gap: 4px; }
+  .status-item .dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--red); box-shadow: 0 0 6px var(--red);
+    animation: pulse 2s ease-in-out infinite;
+  }
+  .status-item .dot.blue {
+    background: var(--blue); box-shadow: 0 0 6px var(--blue);
+  }
+
+  @keyframes pulse {
+    0%,100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  .status-right { margin-left: auto; display: flex; gap: 16px; }
+
+  /* BOOT ANIMATION */
+  #boot-screen {
+    position: fixed; inset: 0;
+    background: #000;
+    z-index: 9997;
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column; gap: 12px;
+    font-family: var(--font-mono);
+    animation: bootfade 0.4s ease-out 1.8s forwards;
+  }
+
+  @keyframes bootfade {
+    to { opacity: 0; pointer-events: none; visibility: hidden; }
+  }
+
+  #boot-screen .boot-text {
+    font-size: 13px; letter-spacing: 3px;
+    color: var(--red);
+    text-shadow: 0 0 20px var(--red), 0 0 40px var(--red-dim);
+  }
+
+  #boot-screen .boot-bar-wrap {
+    width: 300px; height: 2px;
+    background: #1a0505; border-radius: 1px; overflow: hidden;
+  }
+  #boot-screen .boot-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--red-dim), var(--blue));
+    box-shadow: 0 0 8px var(--red);
+    animation: bootbar 1.6s ease-out forwards;
+    width: 0%;
+  }
+
+  @keyframes bootbar {
+    0% { width: 0%; }
+    60% { width: 80%; }
+    80% { width: 92%; }
+    100% { width: 100%; }
+  }
+
+  #boot-screen .boot-sub {
+    font-size: 10px; color: #441122; letter-spacing: 4px;
+    animation: blink 0.8s steps(1) infinite;
+  }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  /* CORNER DECORATIONS */
+  .corner {
+    position: fixed; width: 24px; height: 24px;
+    pointer-events: none; z-index: 100;
+    opacity: 0.4;
+  }
+  .corner-tl { top: 34px; left: 0; border-top: 1px solid var(--red); border-left: 1px solid var(--red); }
+  .corner-tr { top: 34px; right: 0; border-top: 1px solid var(--blue); border-right: 1px solid var(--blue); }
+  .corner-bl { bottom: 22px; left: 0; border-bottom: 1px solid var(--red); border-left: 1px solid var(--red); }
+  .corner-br { bottom: 22px; right: 0; border-bottom: 1px solid var(--blue); border-right: 1px solid var(--blue); }
+</style>
+</head>
+<body>
+
+<!-- BOOT SCREEN -->
+<div id="boot-screen">
+  <div class="boot-text">$[01110010] INITIALIZING</div>
+  <div class="boot-bar-wrap"><div class="boot-bar"></div></div>
+  <div class="boot-sub">LOADING KERNEL...</div>
+</div>
+
+<!-- CORNER ACCENTS -->
+<div class="corner corner-tl"></div>
+<div class="corner corner-tr"></div>
+<div class="corner corner-bl"></div>
+<div class="corner corner-br"></div>
+
+<div id="app">
+  <!-- TITLE BAR -->
+  <div id="titlebar">
+    <span class="logo">$[01110010]</span>
+    <span class="title-center">r.kbsigmaboy67.pages.dev</span>
+    <div class="winctrl">
+      <span class="wc-close" title="close"></span>
+      <span class="wc-min" title="minimize"></span>
+      <span class="wc-max" title="maximize"></span>
+    </div>
+  </div>
+
+  <!-- MENU BAR -->
+  <div id="menubar">
+    <div class="menu-item">File</div>
+    <div class="menu-item">Edit</div>
+    <div class="menu-item">View</div>
+    <div class="menu-item">Run</div>
+    <div class="menu-item">Terminal</div>
+    <div class="menu-item">Help</div>
+  </div>
+
+  <!-- TABS -->
+  <div id="tabs">
+    <div class="tab active">
+      <span class="tab-icon">JS</span>
+      <span>terminal.js</span>
+    </div>
+    <div class="tab" id="new-tab-btn" onclick="addTab(this)">
+      <span style="color:#441122">+</span>
+    </div>
+  </div>
+
+  <!-- WORKSPACE -->
+  <div id="workspace">
+    <div id="editor-area"></div>
+
+    <!-- RESIZE HANDLE -->
+    <div id="resize-handle"></div>
+
+    <!-- TERMINAL PANEL -->
+    <div id="terminal-panel">
+      <div id="terminal-tabs">
+        <div class="term-tab active">TERMINAL</div>
+        <div class="term-tab">PROBLEMS</div>
+        <div class="term-tab">OUTPUT</div>
+        <div class="term-actions">
+          <button class="term-btn" id="run-btn" onclick="runCode()">▶ RUN</button>
+          <button class="term-btn" onclick="clearOutput()">⌫ CLEAR</button>
+        </div>
+      </div>
+      <div id="output"></div>
+    </div>
+  </div>
+
+  <!-- STATUS BAR -->
+  <div id="statusbar">
+    <div class="status-item">
+      <span class="dot"></span>
+      <span id="status-text">READY</span>
+    </div>
+    <div class="status-item">
+      <span style="color:#0044cc">JS</span>
+    </div>
+    <div class="status-right">
+      <div class="status-item"><span class="dot blue"></span><span>r.kbsigmaboy67.pages.dev</span></div>
+      <div class="status-item" id="cursor-pos">Ln 1, Col 1</div>
+      <div class="status-item">UTF-8</div>
+    </div>
+  </div>
+</div>
+
+<!-- MONACO LOADER -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js"></script>
+<script>
+  // === REDIRECT WRAPPER ===
+  // Build the complete page as a blob and location.replace to it
+  // This keeps the URL clean and the title/favicon set
+
+  const DEFAULT_CODE = `// $[01110010] — JS Terminal
+// r.kbsigmaboy67.pages.dev
+// Ctrl+Enter or ▶ RUN to execute
+
+// ──────────────────────────────
+console.log("$[01110010] terminal initialized");
+console.log("\\x1b — kernel v0.1.0");
+
+// Try some examples:
+const greet = (name) => \`[SYS] hello, \${name}\`;
+console.log(greet("operator"));
+
+// Math
+const fib = n => n <= 1 ? n : fib(n-1) + fib(n-2);
+console.log("fib(10) =", fib(10));
+
+// Fetch example (uncomment to try)
+// fetch('https://api.github.com/zen').then(r=>r.text()).then(console.log);
+`;
+
+  // ── OUTPUT HELPERS ──────────────────────────────────────────
+  const out = document.getElementById('output');
+
+  function appendOutput(text, cls = 'out-log') {
+    const span = document.createElement('span');
+    span.className = 'out-line ' + cls;
+    span.textContent = text;
+    out.appendChild(span);
+    out.scrollTop = out.scrollHeight;
+  }
+
+  function clearOutput() {
+    out.innerHTML = '';
+    appendOutput('// output cleared', 'out-system');
+  }
+
+  function setStatus(msg, color) {
+    const el = document.getElementById('status-text');
+    el.textContent = msg;
+    el.style.color = color || '';
+  }
+
+  // ── CONSOLE OVERRIDE ────────────────────────────────────────
+  const _log   = console.log.bind(console);
+  const _warn  = console.warn.bind(console);
+  const _error = console.error.bind(console);
+  const _info  = console.info.bind(console);
+
+  function fmtArgs(args) {
+    return args.map(a => {
+      if (typeof a === 'object') {
+        try { return JSON.stringify(a, null, 2); }
+        catch { return String(a); }
+      }
+      return String(a);
+    }).join(' ');
+  }
+
+  console.log = (...args) => { _log(...args); appendOutput(fmtArgs(args), 'out-log'); };
+  console.info= (...args) => { _info(...args); appendOutput('[info] ' + fmtArgs(args), 'out-info'); };
+  console.warn= (...args) => { _warn(...args); appendOutput('[warn] ' + fmtArgs(args), 'out-warn'); };
+  console.error=(...args) => { _error(...args); appendOutput('[ERR] ' + fmtArgs(args), 'out-error'); };
+
+  // ── RUN CODE ─────────────────────────────────────────────────
+  let monacoEditor = null;
+
+  function runCode() {
+    const code = monacoEditor ? monacoEditor.getValue() : '';
+    appendOutput('', 'out-prompt');
+    appendOutput('// ── RUN ── ' + new Date().toLocaleTimeString(), 'out-system');
+    setStatus('RUNNING', 'var(--blue)');
+    try {
+      const result = new Function(code)();
+      if (result !== undefined) appendOutput('→ ' + String(result), 'out-result');
+      setStatus('OK', 'var(--red)');
+    } catch(e) {
+      appendOutput('[ERR] ' + e.message, 'out-error');
+      setStatus('ERROR', '#ff0022');
+    }
+  }
+
+  // ── RESIZE HANDLE ────────────────────────────────────────────
+  (function() {
+    const handle = document.getElementById('resize-handle');
+    const panel  = document.getElementById('terminal-panel');
+    let dragging = false, startY, startH;
+    handle.addEventListener('mousedown', e => {
+      dragging = true; startY = e.clientY; startH = panel.offsetHeight;
+      document.body.style.userSelect = 'none';
+    });
+    window.addEventListener('mousemove', e => {
+      if (!dragging) return;
+      const delta = startY - e.clientY;
+      const newH = Math.min(Math.max(startH + delta, 60), window.innerHeight * 0.7);
+      panel.style.height = newH + 'px';
+    });
+    window.addEventListener('mouseup', () => {
+      dragging = false;
+      document.body.style.userSelect = '';
+    });
+  })();
+
+  // ── TAB ──────────────────────────────────────────────────────
+  function addTab(el) {
+    const tabs = document.getElementById('tabs');
+    const t = document.createElement('div');
+    t.className = 'tab';
+    t.innerHTML = '<span class="tab-icon">JS</span><span>scratch.js</span>';
+    t.onclick = () => {
+      document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+      t.classList.add('active');
+    };
+    tabs.insertBefore(t, el);
+    document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+    t.classList.add('active');
+  }
+
+  // ── INIT BOOT OUTPUT ─────────────────────────────────────────
+  setTimeout(() => {
+    appendOutput('$[01110010] terminal — r.kbsigmaboy67.pages.dev', 'out-system');
+    appendOutput('kernel loaded. press ▶ RUN or Ctrl+Enter', 'out-system');
+    appendOutput('', 'out-system');
+  }, 2000);
+
+  // ── MONACO EDITOR ────────────────────────────────────────────
+  require.config({ paths: { vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs' }});
+
+  require(['vs/editor/editor.main'], function() {
+    // Patch Monaco's theme to red-blue-black hacker palette
+    monaco.editor.defineTheme('hacker', {
+      base: 'vs-dark',
+      inherit: true,
+      rules: [
+        { token: '',                    foreground: 'cc2233', background: '000000' },
+        { token: 'comment',             foreground: '441122', fontStyle: 'italic' },
+        { token: 'comment.doc',         foreground: '552233', fontStyle: 'italic' },
+        { token: 'keyword',             foreground: 'ff2233', fontStyle: 'bold' },
+        { token: 'keyword.control',     foreground: 'ff0022' },
+        { token: 'keyword.operator',    foreground: '0066ff' },
+        { token: 'storage.type',        foreground: 'ff2244', fontStyle: 'bold' },
+        { token: 'storage.modifier',    foreground: 'dd1133' },
+        { token: 'string',              foreground: '00aaff' },
+        { token: 'string.escape',       foreground: '0088ff' },
+        { token: 'constant.numeric',    foreground: '0077ff' },
+        { token: 'constant.language',   foreground: 'ff4455', fontStyle: 'bold' },
+        { token: 'variable',            foreground: 'cc3344' },
+        { token: 'variable.parameter',  foreground: 'bb2233' },
+        { token: 'variable.other',      foreground: 'dd3344' },
+        { token: 'entity.name.function',foreground: '4499ff', fontStyle: 'bold' },
+        { token: 'entity.name.class',   foreground: '2277ff' },
+        { token: 'entity.name.tag',     foreground: 'ff2233' },
+        { token: 'support.function',    foreground: '3388ff' },
+        { token: 'support.class',       foreground: '2266ff' },
+        { token: 'support.type',        foreground: '1155ff' },
+        { token: 'support.constant',    foreground: '0066ff' },
+        { token: 'punctuation',         foreground: '661122' },
+        { token: 'delimiter',           foreground: '550011' },
+        { token: 'operator',            foreground: '0055dd' },
+        { token: 'identifier',          foreground: 'bb2233' },
+        { token: 'type',                foreground: '0077ff' },
+        { token: 'annotation',          foreground: 'ff3344' },
+        { token: 'number',              foreground: '0088ff' },
+        { token: 'regexp',              foreground: 'ff1133' },
+        { token: 'regexp.escape',       foreground: 'ff3355' },
+      ],
+      colors: {
+        'editor.background':                '#000000',
+        'editor.foreground':                '#cc2233',
+        'editorLineNumber.foreground':      '#330011',
+        'editorLineNumber.activeForeground':'#881122',
+        'editor.lineHighlightBackground':   '#00101a44',
+        'editor.selectionBackground':       '#0044aa55',
+        'editor.inactiveSelectionBackground':'#002266',
+        'editorCursor.foreground':          '#ff2233',
+        'editorCursor.background':          '#000000',
+        'editorWhitespace.foreground':      '#220008',
+        'editorIndentGuide.background':     '#1a0005',
+        'editorIndentGuide.activeBackground':'#330011',
+        'editorRuler.foreground':           '#1a0005',
+        'editor.findMatchBackground':       '#440011',
+        'editor.findMatchHighlightBackground':'#220008',
+        'editorBracketMatch.background':    '#002244',
+        'editorBracketMatch.border':        '#0044aa',
+        'editorGutter.background':          '#030000',
+        'scrollbarSlider.background':       '#220008',
+        'scrollbarSlider.hoverBackground':  '#440011',
+        'scrollbarSlider.activeBackground': '#660011',
+        'minimap.background':               '#010000',
+        'minimapSlider.background':         '#220008',
+        'editorOverviewRuler.border':       '#110005',
+        'editorWidget.background':          '#0a0000',
+        'editorWidget.border':              '#330011',
+        'editorSuggestWidget.background':   '#050000',
+        'editorSuggestWidget.border':       '#220008',
+        'editorSuggestWidget.foreground':   '#bb2233',
+        'editorSuggestWidget.selectedBackground':'#0a0020',
+        'editorHoverWidget.background':     '#050000',
+        'editorHoverWidget.border':         '#220008',
+        'editorHoverWidget.foreground':     '#cc2233',
+        'input.background':                 '#080000',
+        'input.foreground':                 '#cc2233',
+        'input.border':                     '#330011',
+        'focusBorder':                      '#0033aa',
+        'list.hoverBackground':             '#0a0000',
+        'list.focusBackground':             '#100010',
+        'statusBar.background':             '#0a0000',
+        'titleBar.activeBackground':        '#080000',
+        'tab.activeBackground':             '#0a0000',
+        'tab.inactiveBackground':           '#030000',
+        'tab.activeBorder':                 '#ff2233',
+        'panel.background':                 '#000000',
+        'panel.border':                     '#220008',
+      }
+    });
+
+    monacoEditor = monaco.editor.create(document.getElementById('editor-area'), {
+      value: DEFAULT_CODE,
+      language: 'javascript',
+      theme: 'hacker',
+      fontSize: 13,
+      fontFamily: "'Courier New', 'Lucida Console', monospace",
+      lineHeight: 21,
+      letterSpacing: 0.5,
+      minimap: { enabled: true },
+      scrollBeyondLastLine: false,
+      wordWrap: 'off',
+      automaticLayout: true,
+      cursorBlinking: 'phase',
+      cursorSmoothCaretAnimation: 'on',
+      smoothScrolling: true,
+      renderLineHighlight: 'line',
+      matchBrackets: 'always',
+      guides: { indentation: true, bracketPairs: true },
+      bracketPairColorization: { enabled: true },
+      padding: { top: 12, bottom: 12 },
+      lineDecorationsWidth: 8,
+      folding: true,
+      suggest: { showIcons: true },
+      parameterHints: { enabled: true },
+    });
+
+    // Ctrl+Enter to run
+    monacoEditor.addCommand(
+      monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter,
+      runCode
+    );
+
+    // Cursor position in status bar
+    monacoEditor.onDidChangeCursorPosition(e => {
+      document.getElementById('cursor-pos').textContent =
+        `Ln ${e.position.lineNumber}, Col ${e.position.column}`;
+    });
+  });
+</script>
+
+<script>
+// ── BLOB CLOAK ────────────────────────────────────────────────
+// Builds a minimal blob page that:
+//  • Sets the tab title to "$[01110010]"
+//  • Sets the favicon to the custom icon
+//  • Renders a fullscreen iframe pointing back at the real page
+//  • iframe has all allow + allowfullscreen attrs
+// Then location.replace() to that blob so the tab URL is cloaked.
+(function() {
+  if (location.protocol === 'blob:') return; // already cloaked
+
+  const realURL = location.href;
+  const favicon = 'https://754-psi.vercel.app/%7B%E2%88%95%7D.png';
+  const title   = '$[01110010]';
+
+  const shell = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>${title}</title>
+<link rel="icon" type="image/png" href="${favicon}">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{width:100%;height:100%;overflow:hidden;background:#000}
+  iframe{display:block;width:100%;height:100%;border:none}
+</style>
+</head>
+<body>
+<iframe
+  src="${realURL}"
+  allow="accelerometer; autoplay; camera; clipboard-read; clipboard-write; display-capture; encrypted-media; fullscreen; geolocation; gyroscope; magnetometer; microphone; midi; payment; picture-in-picture; publickey-credentials-get; screen-wake-lock; serial; usb; web-share; xr-spatial-tracking"
+  allowfullscreen
+  allowpaymentrequest
+  sandbox="allow-forms allow-modals allow-orientation-lock allow-pointer-lock allow-popups allow-popups-to-escape-sandbox allow-presentation allow-same-origin allow-scripts allow-top-navigation-by-user-activation"
+></iframe>
+</body>
+</html>`;
+
+  const blob = new Blob([shell], { type: 'text/html' });
+  const url  = URL.createObjectURL(blob);
+  location.replace(url);
+})();
+</script>
+</body>
+</html>
