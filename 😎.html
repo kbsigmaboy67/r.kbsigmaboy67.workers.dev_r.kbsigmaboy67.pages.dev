@@ -1,17 +1,17 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" b="0">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
-<meta name="description" content="$[01110010] — JS Terminal">
+<meta name="description" content="KScript — JS Terminal">
 <meta name="theme-color" content="#000000">
 <meta name="color-scheme" content="dark">
-<meta property="og:title" content="$[01110010]">
+<meta property="og:title" content="KScript">
 <meta property="og:description" content="JS Terminal — r.kbsigmaboy67.pages.dev">
 <meta property="og:type" content="website">
 <meta name="robots" content="noindex">
-<title>$[01110010]</title>
+<title>KScript</title>
 <link rel="icon" type="image/png" href="https://754-psi.vercel.app/%7B%E2%88%95%7D.png">
 <style>
   :root {
@@ -439,13 +439,34 @@
   .corner-tr { top: 34px; right: 0; border-top: 1px solid var(--blue); border-right: 1px solid var(--blue); }
   .corner-bl { bottom: 22px; left: 0; border-bottom: 1px solid var(--red); border-left: 1px solid var(--red); }
   .corner-br { bottom: 22px; right: 0; border-bottom: 1px solid var(--blue); border-right: 1px solid var(--blue); }
+
+  /* LANGUAGE SELECT */
+  #lang-select {
+    background: transparent;
+    border: none;
+    color: #0055dd;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 1px;
+    cursor: pointer;
+    outline: none;
+    padding: 0 2px;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  #lang-select:hover { color: var(--blue); text-shadow: 0 0 6px var(--blue-dim); }
+  #lang-select option {
+    background: #0a0000;
+    color: #cc2233;
+    font-family: var(--font-mono);
+  }
 </style>
 </head>
 <body>
 
 <!-- BOOT SCREEN -->
 <div id="boot-screen">
-  <div class="boot-text">$[01110010] INITIALIZING</div>
+  <div class="boot-text">KScript INITIALIZING</div>
   <div class="boot-bar-wrap"><div class="boot-bar"></div></div>
   <div class="boot-sub">LOADING KERNEL...</div>
 </div>
@@ -459,7 +480,7 @@
 <div id="app">
   <!-- TITLE BAR -->
   <div id="titlebar">
-    <span class="logo">$[01110010]</span>
+    <span class="logo">KScript</span>
     <span class="title-center">r.kbsigmaboy67.pages.dev</span>
     <div class="winctrl">
       <span class="wc-close" title="close"></span>
@@ -517,8 +538,75 @@
       <span class="dot"></span>
       <span id="status-text">READY</span>
     </div>
-    <div class="status-item">
-      <span style="color:#0044cc">JS</span>
+    <div class="status-item" style="position:relative">
+      <select id="lang-select" title="Language Mode" onchange="changeLang(this.value)">
+        <option value="javascript">JavaScript</option>
+        <option value="typescript">TypeScript</option>
+        <option value="python">Python</option>
+        <option value="java">Java</option>
+        <option value="c">C</option>
+        <option value="cpp">C++</option>
+        <option value="csharp">C#</option>
+        <option value="go">Go</option>
+        <option value="rust">Rust</option>
+        <option value="php">PHP</option>
+        <option value="ruby">Ruby</option>
+        <option value="swift">Swift</option>
+        <option value="kotlin">Kotlin</option>
+        <option value="scala">Scala</option>
+        <option value="r">R</option>
+        <option value="lua">Lua</option>
+        <option value="perl">Perl</option>
+        <option value="haskell">Haskell</option>
+        <option value="elixir">Elixir</option>
+        <option value="clojure">Clojure</option>
+        <option value="dart">Dart</option>
+        <option value="fsharp">F#</option>
+        <option value="ocaml">OCaml</option>
+        <option value="scheme">Scheme</option>
+        <option value="racket">Racket</option>
+        <option value="erlang">Erlang</option>
+        <option value="julia">Julia</option>
+        <option value="fortran">Fortran</option>
+        <option value="cobol">COBOL</option>
+        <option value="pascal">Pascal</option>
+        <option value="assembly">Assembly</option>
+        <option value="wasm">WebAssembly</option>
+        <option value="shell">Shell / Bash</option>
+        <option value="powershell">PowerShell</option>
+        <option value="batch">Batch</option>
+        <option value="sql">SQL</option>
+        <option value="mysql">MySQL</option>
+        <option value="pgsql">PostgreSQL</option>
+        <option value="redis">Redis</option>
+        <option value="graphql">GraphQL</option>
+        <option value="html">HTML</option>
+        <option value="css">CSS</option>
+        <option value="scss">SCSS</option>
+        <option value="less">Less</option>
+        <option value="xml">XML</option>
+        <option value="json">JSON</option>
+        <option value="yaml">YAML</option>
+        <option value="toml">TOML</option>
+        <option value="markdown">Markdown</option>
+        <option value="latex">LaTeX</option>
+        <option value="dockerfile">Dockerfile</option>
+        <option value="nginx">Nginx</option>
+        <option value="ini">INI</option>
+        <option value="proto">Protobuf</option>
+        <option value="solidity">Solidity</option>
+        <option value="vb">VB</option>
+        <option value="apex">Apex</option>
+        <option value="abap">ABAP</option>
+        <option value="pla">PL/A</option>
+        <option value="tcl">Tcl</option>
+        <option value="groovy">Groovy</option>
+        <option value="objectivec">Objective-C</option>
+        <option value="coffeescript">CoffeeScript</option>
+        <option value="handlebars">Handlebars</option>
+        <option value="twig">Twig</option>
+        <option value="razor">Razor</option>
+      </select>
     </div>
     <div class="status-right">
       <div class="status-item"><span class="dot blue"></span><span>r.kbsigmaboy67.pages.dev</span></div>
@@ -535,12 +623,12 @@
   // Build the complete page as a blob and location.replace to it
   // This keeps the URL clean and the title/favicon set
 
-  const DEFAULT_CODE = `// $[01110010] — JS Terminal
+  const DEFAULT_CODE = `// KScript — JS Terminal
 // r.kbsigmaboy67.pages.dev
 // Ctrl+Enter or ▶ RUN to execute
 
 // ──────────────────────────────
-console.log("$[01110010] terminal initialized");
+console.log("KScript terminal initialized");
 console.log("\\x1b — kernel v0.1.0");
 
 // Try some examples:
@@ -598,8 +686,125 @@ console.log("fib(10) =", fib(10));
   console.warn= (...args) => { _warn(...args); appendOutput('[warn] ' + fmtArgs(args), 'out-warn'); };
   console.error=(...args) => { _error(...args); appendOutput('[ERR] ' + fmtArgs(args), 'out-error'); };
 
-  // ── RUN CODE ─────────────────────────────────────────────────
-  let monacoEditor = null;
+  // ── LOCATION SPOOF ───────────────────────────────────────────
+  // Override window.location so the real URL is hidden from devtools/JS
+  (function() {
+    const fake = 'https://r.kbsigmaboy67.pages.dev/';
+    const fakeObj = {
+      href:     fake,
+      origin:   'https://r.kbsigmaboy67.pages.dev',
+      protocol: 'https:',
+      host:     'r.kbsigmaboy67.pages.dev',
+      hostname: 'r.kbsigmaboy67.pages.dev',
+      port:     '',
+      pathname: '/',
+      search:   '',
+      hash:     '',
+      toString: () => fake,
+      assign:   () => {},
+      replace:  () => {},
+      reload:   () => {},
+    };
+    try {
+      Object.defineProperty(window, 'location', {
+        get: () => fakeObj,
+        configurable: false,
+      });
+    } catch(e) {
+      // Already defined non-configurable in some browsers — silently ignore
+    }
+  })();
+
+  // ── LANGUAGE CODE STUBS ──────────────────────────────────────
+  const LANG_STUBS = {
+    javascript:   `// JavaScript\nconsole.log("hello from JS");\nconst x = [1,2,3].map(n => n * 2);\nconsole.log(x);`,
+    typescript:   `// TypeScript\ntype Greeter = (name: string) => string;\nconst greet: Greeter = (n) => \`hello \${n}\`;\nconsole.log(greet("world"));`,
+    python:       `# Python\ndef fib(n):\n    return n if n <= 1 else fib(n-1) + fib(n-2)\nprint([fib(i) for i in range(10)])`,
+    java:         `// Java\npublic class Main {\n    public static void main(String[] args) {\n        System.out.println("hello world");\n    }\n}`,
+    c:            `// C\n#include <stdio.h>\nint main() {\n    printf("hello world\\n");\n    return 0;\n}`,
+    cpp:          `// C++\n#include <iostream>\nint main() {\n    std::cout << "hello world" << std::endl;\n    return 0;\n}`,
+    csharp:       `// C#\nusing System;\nclass Program {\n    static void Main() {\n        Console.WriteLine("hello world");\n    }\n}`,
+    go:           `// Go\npackage main\nimport "fmt"\nfunc main() {\n    fmt.Println("hello world")\n}`,
+    rust:         `// Rust\nfn main() {\n    println!("hello world");\n    let v: Vec<i32> = (1..=5).map(|x| x * x).collect();\n    println!("{:?}", v);\n}`,
+    php:          `<?php\n// PHP\nfunction greet($name) {\n    return "hello $name";\n}\necho greet("world");`,
+    ruby:         `# Ruby\ndef fib(n)\n  n <= 1 ? n : fib(n-1) + fib(n-2)\nend\np (0..9).map { |i| fib(i) }`,
+    swift:        `// Swift\nfunc greet(_ name: String) -> String {\n    return "hello \\(name)"\n}\nprint(greet("world"))`,
+    kotlin:       `// Kotlin\nfun main() {\n    val nums = (1..5).map { it * it }\n    println(nums)\n}`,
+    scala:        `// Scala\nobject Main extends App {\n  val nums = (1 to 5).map(x => x * x)\n  println(nums)\n}`,
+    r:            `# R\nfib <- function(n) if (n <= 1) n else fib(n-1) + fib(n-2)\nprint(sapply(0:9, fib))`,
+    lua:          `-- Lua\nfunction fib(n)\n  if n <= 1 then return n end\n  return fib(n-1) + fib(n-2)\nend\nfor i=0,9 do print(fib(i)) end`,
+    perl:         `#!/usr/bin/perl\n# Perl\nsub fib { $_[0] <= 1 ? $_[0] : fib($_[0]-1)+fib($_[0]-2) }\nprint fib($_)."\\n" for 0..9;`,
+    haskell:      `-- Haskell\nfibs :: [Integer]\nfibs = 0 : 1 : zipWith (+) fibs (tail fibs)\nmain :: IO ()\nmain = print (take 10 fibs)`,
+    elixir:       `# Elixir\ndefmodule Fib do\n  def calc(0), do: 0\n  def calc(1), do: 1\n  def calc(n), do: calc(n-1) + calc(n-2)\nend\nIO.inspect Enum.map(0..9, &Fib.calc/1)`,
+    clojure:      `; Clojure\n(defn fib [n]\n  (if (<= n 1) n\n    (+ (fib (- n 1)) (fib (- n 2)))))\n(println (map fib (range 10)))`,
+    dart:         `// Dart\nvoid main() {\n  int fib(int n) => n <= 1 ? n : fib(n-1) + fib(n-2);\n  print(List.generate(10, fib));\n}`,
+    fsharp:       `// F#\nlet rec fib n = if n <= 1 then n else fib(n-1) + fib(n-2)\n[0..9] |> List.map fib |> printfn "%A"`,
+    ocaml:        `(* OCaml *)\nlet rec fib n = if n <= 1 then n else fib(n-1) + fib(n-2)\nlet () = List.iter (fun i -> Printf.printf "%d " (fib i)) (List.init 10 Fun.id)`,
+    scheme:       `; Scheme\n(define (fib n)\n  (if (<= n 1) n\n    (+ (fib (- n 1)) (fib (- n 2)))))\n(display (map fib '(0 1 2 3 4 5 6 7 8 9)))`,
+    racket:       `#lang racket\n(define (fib n)\n  (if (<= n 1) n\n    (+ (fib (- n 1)) (fib (- n 2)))))\n(displayln (map fib (range 10)))`,
+    erlang:       `-module(main).\n-export([fib/1]).\nfib(0) -> 0;\nfib(1) -> 1;\nfib(N) -> fib(N-1) + fib(N-2).`,
+    julia:        `# Julia\nfib(n) = n <= 1 ? n : fib(n-1) + fib(n-2)\nprintln([fib(i) for i in 0:9])`,
+    fortran:      `! Fortran\nprogram hello\n  implicit none\n  integer :: i\n  do i = 1, 10\n    print *, i * i\n  end do\nend program hello`,
+    cobol:        `       IDENTIFICATION DIVISION.\n       PROGRAM-ID. HELLO.\n       PROCEDURE DIVISION.\n           DISPLAY "HELLO WORLD".\n           STOP RUN.`,
+    pascal:       `{ Pascal }\nprogram Hello;\nbegin\n  writeln('hello world');\nend.`,
+    assembly:     `; x86-64 NASM Assembly\nsection .data\n  msg db 'hello world', 10\n  len equ $ - msg\nsection .text\n  global _start\n_start:\n  mov rax, 1\n  mov rdi, 1\n  mov rsi, msg\n  mov rdx, len\n  syscall`,
+    wasm:         `(module\n  (func $add (param $a i32) (param $b i32) (result i32)\n    local.get $a\n    local.get $b\n    i32.add)\n  (export "add" (func $add)))`,
+    shell:        `#!/bin/bash\n# Shell\nfor i in $(seq 1 10); do\n  echo "item $i"\ndone`,
+    powershell:   `# PowerShell\n1..10 | ForEach-Object { Write-Host "item $_" }`,
+    batch:        `@echo off\nREM Batch\nfor /l %%i in (1,1,10) do echo item %%i`,
+    sql:          `-- SQL\nSELECT\n  id,\n  name,\n  COUNT(*) AS total\nFROM users\nWHERE active = 1\nGROUP BY id, name\nORDER BY total DESC\nLIMIT 10;`,
+    mysql:        `-- MySQL\nSELECT u.id, u.name, COUNT(o.id) AS orders\nFROM users u\nLEFT JOIN orders o ON u.id = o.user_id\nGROUP BY u.id\nHAVING orders > 0\nORDER BY orders DESC;`,
+    pgsql:        `-- PostgreSQL\nSELECT\n  generate_series(1, 10) AS n,\n  n * n AS square;`,
+    redis:        `# Redis\nSET mykey "hello"\nGET mykey\nLPUSH mylist a b c\nLRANGE mylist 0 -1`,
+    graphql:      `# GraphQL\nquery GetUser($id: ID!) {\n  user(id: $id) {\n    id\n    name\n    email\n    posts {\n      title\n      createdAt\n    }\n  }\n}`,
+    html:         `<!-- HTML -->\n<!DOCTYPE html>\n<html lang="en">\n<head>\n  <meta charset="UTF-8">\n  <title>page</title>\n</head>\n<body>\n  <h1>hello world</h1>\n</body>\n</html>`,
+    css:          `/* CSS */\n:root {\n  --primary: #ff2233;\n  --bg: #000;\n}\nbody {\n  background: var(--bg);\n  color: var(--primary);\n  font-family: monospace;\n}`,
+    scss:         `// SCSS\n$red: #ff2233;\n$bg: #000;\nbody {\n  background: $bg;\n  color: $red;\n  h1 { font-size: 2rem; }\n}`,
+    less:         `// Less\n@red: #ff2233;\n@bg: #000;\nbody {\n  background: @bg;\n  color: @red;\n}`,
+    xml:          `<?xml version="1.0" encoding="UTF-8"?>\n<root>\n  <item id="1">\n    <name>alpha</name>\n    <value>100</value>\n  </item>\n</root>`,
+    json:         `{\n  "name": "KScript",\n  "version": "1.0.0",\n  "kernel": "v0.1.0",\n  "langs": 50,\n  "theme": "hacker"\n}`,
+    yaml:         `# YAML\nname: "KScript"\nversion: "1.0.0"\ntheme:\n  primary: "#ff2233"\n  secondary: "#0066ff"\n  bg: "#000000"\nfeatures:\n  - editor\n  - terminal\n  - multi-lang`,
+    toml:         `# TOML\n[package]\nname = "KScript"\nversion = "1.0.0"\n\n[theme]\nprimary = "#ff2233"\nsecondary = "#0066ff"\nbg = "#000000"`,
+    markdown:     `# KScript\n\n> JS Terminal — r.kbsigmaboy67.pages.dev\n\n## Features\n\n- 50+ languages\n- VSCode Monaco engine\n- Red/blue hacker theme\n- Scanline CRT overlay\n\n\`\`\`js\nconsole.log("hello world");\n\`\`\``,
+    latex:        `% LaTeX\n\\documentclass{article}\n\\begin{document}\n\\title{\\texttt{\\KScript}}\n\\maketitle\nHello, \\textbf{world}.\n\\end{document}`,
+    dockerfile:   `# Dockerfile\nFROM node:20-alpine\nWORKDIR /app\nCOPY package*.json ./\nRUN npm ci --production\nCOPY . .\nEXPOSE 3000\nCMD ["node", "index.js"]`,
+    nginx:        `# Nginx\nserver {\n    listen 80;\n    server_name r.kbsigmaboy67.pages.dev;\n    root /var/www/html;\n    index index.html;\n    location / {\n        try_files $uri $uri/ =404;\n    }\n}`,
+    ini:          `; INI\n[terminal]\ntheme = hacker\nfontSize = 13\nfontFamily = Courier New\n\n[colors]\nprimary = #ff2233\nsecondary = #0066ff\nbackground = #000000`,
+    proto:        `// Protobuf\nsyntax = "proto3";\npackage terminal;\nmessage RunRequest {\n  string code = 1;\n  string language = 2;\n}\nmessage RunResponse {\n  string output = 1;\n  bool success = 2;\n}`,
+    solidity:     `// Solidity\n// SPDX-License-Identifier: MIT\npragma solidity ^0.8.0;\ncontract Greeter {\n    string public greeting = "hello world";\n    function setGreeting(string memory _g) public {\n        greeting = _g;\n    }\n}`,
+    vb:           `' VB\nModule Program\n    Sub Main()\n        Console.WriteLine("hello world")\n        For i As Integer = 1 To 10\n            Console.WriteLine(i)\n        Next\n    End Sub\nEnd Module`,
+    groovy:       `// Groovy\ndef fib = { n -> n <= 1 ? n : fib(n-1) + fib(n-2) }\nprintln((0..9).collect { fib(it) })`,
+    objectivec:   `// Objective-C\n#import <Foundation/Foundation.h>\nint main() {\n    @autoreleasepool {\n        NSLog(@"hello world");\n    }\n    return 0;\n}`,
+    coffeescript: `# CoffeeScript\nfib = (n) -> if n <= 1 then n else fib(n-1) + fib(n-2)\nconsole.log (fib i for i in [0..9])`,
+    handlebars:   `{{! Handlebars }}\n<div class="terminal">\n  <h1>{{title}}</h1>\n  {{#each items}}\n    <p>{{this}}</p>\n  {{/each}}\n</div>`,
+    twig:         `{# Twig #}\n{% for i in 1..10 %}\n  <p>item {{ i }}</p>\n{% endfor %}`,
+    razor:        `@* Razor *@\n@model IEnumerable<string>\n<ul>\n  @foreach (var item in Model) {\n    <li>@item</li>\n  }\n</ul>`,
+    tcl:          `# Tcl\nproc fib {n} {\n    if {$n <= 1} {return $n}\n    return [expr {[fib [expr {$n-1}]] + [fib [expr {$n-2}]]}]\n}\nfor {set i 0} {$i < 10} {incr i} { puts [fib $i] }`,
+    apex:         `// Apex (Salesforce)\npublic class HelloWorld {\n    public static void greet() {\n        System.debug('hello world');\n    }\n}`,
+    abap:         `* ABAP\nREPORT zhello.\nWRITE: / 'hello world'.`,
+  };
+
+  // ── CHANGE LANGUAGE ──────────────────────────────────────────
+  function changeLang(lang) {
+    if (!monacoEditor) return;
+    const model = monacoEditor.getModel();
+    // Map a few display names back to Monaco language IDs
+    const monacoLangMap = {
+      shell: 'shell', batch: 'bat', wasm: 'wat', assembly: 'plaintext',
+      cobol: 'plaintext', fortran: 'plaintext', pascal: 'plaintext',
+      redis: 'plaintext', ini: 'ini', toml: 'plaintext', proto: 'proto',
+      racket: 'scheme', pla: 'plaintext', twig: 'twig', apex: 'apex',
+      abap: 'plaintext', tcl: 'tcl',
+    };
+    const monacoLang = monacoLangMap[lang] || lang;
+    monaco.editor.setModelLanguage(model, monacoLang);
+    if (LANG_STUBS[lang]) monacoEditor.setValue(LANG_STUBS[lang]);
+    // Update tab icon
+    const icon = document.querySelector('.tab.active .tab-icon');
+    if (icon) icon.textContent = lang.toUpperCase().slice(0, 4);
+  }
+
+
 
   function runCode() {
     const code = monacoEditor ? monacoEditor.getValue() : '';
@@ -654,7 +859,7 @@ console.log("fib(10) =", fib(10));
 
   // ── INIT BOOT OUTPUT ─────────────────────────────────────────
   setTimeout(() => {
-    appendOutput('$[01110010] terminal — r.kbsigmaboy67.pages.dev', 'out-system');
+    appendOutput('KScript terminal — r.kbsigmaboy67.pages.dev', 'out-system');
     appendOutput('kernel loaded. press ▶ RUN or Ctrl+Enter', 'out-system');
     appendOutput('', 'out-system');
   }, 2000);
@@ -793,17 +998,18 @@ console.log("fib(10) =", fib(10));
 <script>
 // ── BLOB CLOAK ────────────────────────────────────────────────
 // Builds a minimal blob page that:
-//  • Sets the tab title to "$[01110010]"
+//  • Sets the tab title to "KScript"
 //  • Sets the favicon to the custom icon
 //  • Renders a fullscreen iframe pointing back at the real page
 //  • iframe has all allow + allowfullscreen attrs
 // Then location.replace() to that blob so the tab URL is cloaked.
 (function() {
-  if (location.protocol === 'blob:') return; // already cloaked
+  // Guard: if we're already inside an iframe, we are the framed content — don't re-cloak
+  if (window !== window.top) return;
 
   const realURL = location.href;
   const favicon = 'https://754-psi.vercel.app/%7B%E2%88%95%7D.png';
-  const title   = '$[01110010]';
+  const title   = 'KScript';
 
   const shell = `<!DOCTYPE html>
 <html lang="en">
