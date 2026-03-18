@@ -460,6 +460,95 @@
     color: #cc2233;
     font-family: var(--font-mono);
   }
+
+  /* ── FILE OPS MODAL ── */
+  #fileops-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.82);
+    z-index: 8000; align-items: center; justify-content: center;
+    backdrop-filter: blur(2px);
+  }
+  #fileops-overlay.open { display: flex; }
+
+  #fileops-modal {
+    background: #050000;
+    border: 1px solid var(--red-dim);
+    box-shadow: 0 0 40px var(--red-glow), 0 0 80px rgba(0,40,100,0.2);
+    width: 460px; max-width: 96vw;
+    font-family: var(--font-mono);
+    color: var(--red);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  #fileops-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 14px;
+    background: #0a0000;
+    border-bottom: 1px solid #220008;
+    font-size: 11px; letter-spacing: 3px;
+  }
+  #fileops-header span { color: var(--red); text-shadow: 0 0 8px var(--red-dim); }
+  #fileops-close {
+    cursor: pointer; color: #441122; font-size: 14px;
+    transition: color 0.15s;
+  }
+  #fileops-close:hover { color: var(--red); }
+
+  #fileops-body { padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+
+  .fop-section {
+    border: 1px solid #1a0505;
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .fop-section-title {
+    font-size: 10px; letter-spacing: 2px; color: #441122;
+    padding: 5px 10px; background: #080000;
+    border-bottom: 1px solid #110005;
+  }
+  .fop-btns {
+    display: flex; flex-wrap: wrap; gap: 6px; padding: 10px;
+  }
+
+  .fop-btn {
+    font-family: var(--font-mono); font-size: 11px; letter-spacing: 1px;
+    padding: 5px 12px; cursor: pointer; border-radius: 2px;
+    border: 1px solid #330011; background: transparent; color: #cc2233;
+    transition: all 0.15s;
+  }
+  .fop-btn:hover { background: #0a0000; color: var(--red); border-color: var(--red-dim); text-shadow: 0 0 6px var(--red-dim); }
+  .fop-btn.blue { color: #0055dd; border-color: #002244; }
+  .fop-btn.blue:hover { color: var(--cyan); border-color: var(--blue); background: #000a1a; text-shadow: 0 0 6px var(--cyan); }
+  .fop-btn.green { color: #008833; border-color: #003311; }
+  .fop-btn.green:hover { color: #00cc44; border-color: #006622; background: #001a08; text-shadow: 0 0 6px #00aa33; }
+
+  .fop-input-row {
+    display: flex; gap: 6px; padding: 6px 10px 10px;
+    align-items: center;
+  }
+  .fop-input {
+    flex: 1; background: #080000; border: 1px solid #220008;
+    color: var(--red); font-family: var(--font-mono); font-size: 11px;
+    padding: 4px 8px; outline: none; border-radius: 2px;
+    letter-spacing: 1px;
+  }
+  .fop-input:focus { border-color: var(--red-dim); box-shadow: 0 0 6px var(--red-glow); }
+  .fop-input::placeholder { color: #331122; }
+
+  /* Binary preview in output */
+  .out-binary { color: #0066ff; font-size: 11px; letter-spacing: 0.5px; }
+  .out-hex    { color: #0044cc; }
+
+  /* Drop zone */
+  #drop-zone {
+    border: 1px dashed #220008; border-radius: 3px;
+    padding: 12px; text-align: center; font-size: 11px;
+    color: #441122; letter-spacing: 2px; cursor: pointer;
+    transition: all 0.2s; margin: 0 10px 10px;
+  }
+  #drop-zone.drag-over { border-color: var(--red-dim); color: var(--red); background: #0a0000; }
+  #drop-zone:hover { border-color: #440011; color: #882233; }
 </style>
 </head>
 <body>
@@ -491,12 +580,76 @@
 
   <!-- MENU BAR -->
   <div id="menubar">
-    <div class="menu-item">File</div>
+    <div class="menu-item" onclick="openFileOps()">File</div>
     <div class="menu-item">Edit</div>
     <div class="menu-item">View</div>
     <div class="menu-item">Run</div>
     <div class="menu-item">Terminal</div>
     <div class="menu-item">Help</div>
+  </div>
+
+  <!-- FILE OPS MODAL -->
+  <div id="fileops-overlay" onclick="if(event.target===this)closeFileOps()">
+    <div id="fileops-modal">
+      <div id="fileops-header">
+        <span>⬡ FILE OPERATIONS</span>
+        <span id="fileops-close" onclick="closeFileOps()">✕</span>
+      </div>
+      <div id="fileops-body">
+
+        <!-- EXPORT -->
+        <div class="fop-section">
+          <div class="fop-section-title">EXPORT</div>
+          <div class="fop-input-row">
+            <input class="fop-input" id="export-name" placeholder="filename (e.g. script.js)" value="script.js">
+          </div>
+          <div class="fop-btns">
+            <button class="fop-btn" onclick="exportPlain()">⬇ Export Plain</button>
+            <button class="fop-btn blue" onclick="exportEncrypted()">⬇ Export Encrypted</button>
+            <button class="fop-btn" onclick="exportBinary()">⬇ Export Binary (.bin)</button>
+          </div>
+        </div>
+
+        <!-- IMPORT -->
+        <div class="fop-section">
+          <div class="fop-section-title">IMPORT</div>
+          <div id="drop-zone" onclick="document.getElementById('import-file').click()"
+               ondragover="event.preventDefault();this.classList.add('drag-over')"
+               ondragleave="this.classList.remove('drag-over')"
+               ondrop="handleDrop(event)">
+            ▲ DROP FILE HERE or CLICK TO BROWSE
+          </div>
+          <input type="file" id="import-file" style="display:none" onchange="handleFileImport(this)">
+          <div class="fop-btns">
+            <button class="fop-btn" onclick="document.getElementById('import-file').click()">⬆ Import Text/Code</button>
+            <button class="fop-btn blue" onclick="importEncrypted()">⬆ Import Encrypted</button>
+            <button class="fop-btn" onclick="importBinary()">⬆ Import Binary</button>
+          </div>
+        </div>
+
+        <!-- ENCRYPT / DECRYPT -->
+        <div class="fop-section">
+          <div class="fop-section-title">ENCRYPT / DECRYPT (AES-GCM)</div>
+          <div class="fop-input-row">
+            <input class="fop-input" id="enc-key" placeholder="passphrase" type="password">
+            <button class="fop-btn blue" onclick="encryptEditor()">🔒 Encrypt</button>
+            <button class="fop-btn" onclick="decryptEditor()">🔓 Decrypt</button>
+          </div>
+        </div>
+
+        <!-- BINARY TOOLS -->
+        <div class="fop-section">
+          <div class="fop-section-title">BINARY TOOLS</div>
+          <div class="fop-btns">
+            <button class="fop-btn blue" onclick="viewAsHex()">HEX DUMP</button>
+            <button class="fop-btn" onclick="viewAsBinary()">BINARY BITS</button>
+            <button class="fop-btn green" onclick="viewAsBase64()">BASE64</button>
+            <button class="fop-btn" onclick="hexToEditor()">HEX → EDITOR</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
   </div>
 
   <!-- TABS -->
@@ -686,7 +839,290 @@ console.log("fib(10) =", fib(10));
   console.warn= (...args) => { _warn(...args); appendOutput('[warn] ' + fmtArgs(args), 'out-warn'); };
   console.error=(...args) => { _error(...args); appendOutput('[ERR] ' + fmtArgs(args), 'out-error'); };
 
-  // ── LOCATION SPOOF ───────────────────────────────────────────
+
+  // ── FILE OPS ─────────────────────────────────────────────────
+
+  function openFileOps()  { document.getElementById('fileops-overlay').classList.add('open'); }
+  function closeFileOps() { document.getElementById('fileops-overlay').classList.remove('open'); }
+
+  function getEditorValue() { return monacoEditor ? monacoEditor.getValue() : ''; }
+  function setEditorValue(v) { if (monacoEditor) monacoEditor.setValue(v); }
+
+  function getExportName() {
+    return document.getElementById('export-name').value.trim() || 'script.js';
+  }
+
+  // ── DOWNLOAD HELPER ──
+  function downloadBlob(blob, filename) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click();
+    setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 1000);
+  }
+
+  // ── EXPORT PLAIN ──
+  function exportPlain() {
+    const code = getEditorValue();
+    const blob = new Blob([code], { type: 'text/plain' });
+    downloadBlob(blob, getExportName());
+    appendOutput('[FILE] exported: ' + getExportName(), 'out-info');
+    closeFileOps();
+  }
+
+  // ── EXPORT BINARY ──
+  function exportBinary() {
+    const code = getEditorValue();
+    const enc  = new TextEncoder();
+    const bytes = enc.encode(code);
+    const blob  = new Blob([bytes], { type: 'application/octet-stream' });
+    const name  = getExportName().replace(/\.[^.]+$/, '') + '.bin';
+    downloadBlob(blob, name);
+    appendOutput('[FILE] binary export: ' + name + ' (' + bytes.length + ' bytes)', 'out-info');
+    closeFileOps();
+  }
+
+  // ── AES-GCM KEY DERIVATION ──
+  async function deriveKey(passphrase, salt) {
+    const enc  = new TextEncoder();
+    const raw  = await crypto.subtle.importKey('raw', enc.encode(passphrase), 'PBKDF2', false, ['deriveKey']);
+    return crypto.subtle.deriveKey(
+      { name: 'PBKDF2', salt, iterations: 200000, hash: 'SHA-256' },
+      raw, { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']
+    );
+  }
+
+  // ── ENCRYPT EDITOR ──
+  async function encryptEditor() {
+    const pass = document.getElementById('enc-key').value;
+    if (!pass) { appendOutput('[ERR] enter a passphrase first', 'out-error'); return; }
+    const code  = getEditorValue();
+    const enc   = new TextEncoder();
+    const salt  = crypto.getRandomValues(new Uint8Array(16));
+    const iv    = crypto.getRandomValues(new Uint8Array(12));
+    const key   = await deriveKey(pass, salt);
+    const ct    = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, enc.encode(code));
+    // Pack: magic(4) + salt(16) + iv(12) + ciphertext
+    const magic  = new Uint8Array([0x4B, 0x53, 0x45, 0x4E]); // KSEN
+    const packed = new Uint8Array(4 + 16 + 12 + ct.byteLength);
+    packed.set(magic, 0); packed.set(salt, 4); packed.set(iv, 20);
+    packed.set(new Uint8Array(ct), 32);
+    const b64 = btoa(String.fromCharCode(...packed));
+    setEditorValue('// KScript Encrypted\n// Decrypt via File > Decrypt\n' + b64);
+    appendOutput('[CRYPT] editor content encrypted (AES-256-GCM)', 'out-info');
+  }
+
+  // ── EXPORT ENCRYPTED ──
+  async function exportEncrypted() {
+    const pass = document.getElementById('enc-key').value;
+    if (!pass) {
+      openFileOps();
+      appendOutput('[ERR] enter passphrase in modal first', 'out-error');
+      return;
+    }
+    const code  = getEditorValue();
+    const enc   = new TextEncoder();
+    const salt  = crypto.getRandomValues(new Uint8Array(16));
+    const iv    = crypto.getRandomValues(new Uint8Array(12));
+    const key   = await deriveKey(pass, salt);
+    const ct    = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, enc.encode(code));
+    const magic  = new Uint8Array([0x4B, 0x53, 0x45, 0x4E]);
+    const packed = new Uint8Array(4 + 16 + 12 + ct.byteLength);
+    packed.set(magic, 0); packed.set(salt, 4); packed.set(iv, 20);
+    packed.set(new Uint8Array(ct), 32);
+    const blob = new Blob([packed], { type: 'application/octet-stream' });
+    const name = getExportName().replace(/\.[^.]+$/, '') + '.ksenc';
+    downloadBlob(blob, name);
+    appendOutput('[FILE] encrypted export: ' + name, 'out-info');
+    closeFileOps();
+  }
+
+  // ── DECRYPT EDITOR ──
+  async function decryptEditor() {
+    const pass = document.getElementById('enc-key').value;
+    if (!pass) { appendOutput('[ERR] enter a passphrase first', 'out-error'); return; }
+    const val = getEditorValue().replace(/\/\/[^\n]*\n/g, '').trim();
+    let bytes;
+    try {
+      bytes = Uint8Array.from(atob(val), c => c.charCodeAt(0));
+    } catch {
+      appendOutput('[ERR] not valid encrypted content', 'out-error'); return;
+    }
+    const magic = bytes.slice(0, 4);
+    if (String.fromCharCode(...magic) !== 'KSEN') {
+      appendOutput('[ERR] missing KSEN magic — wrong file?', 'out-error'); return;
+    }
+    const salt = bytes.slice(4, 20);
+    const iv   = bytes.slice(20, 32);
+    const ct   = bytes.slice(32);
+    try {
+      const key    = await deriveKey(pass, salt);
+      const plain  = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, ct);
+      setEditorValue(new TextDecoder().decode(plain));
+      appendOutput('[CRYPT] decrypted successfully', 'out-result');
+    } catch {
+      appendOutput('[ERR] wrong passphrase or corrupted data', 'out-error');
+    }
+  }
+
+  // ── IMPORT ENCRYPTED ──
+  function importEncrypted() {
+    const input = document.createElement('input');
+    input.type = 'file'; input.accept = '.ksenc,application/octet-stream';
+    input.onchange = async () => {
+      const file = input.files[0]; if (!file) return;
+      const buf   = await file.arrayBuffer();
+      const bytes = new Uint8Array(buf);
+      const magic = String.fromCharCode(...bytes.slice(0, 4));
+      if (magic !== 'KSEN') {
+        appendOutput('[ERR] not a KScript encrypted file', 'out-error'); return;
+      }
+      // Load as b64 into editor, user decrypts manually
+      const b64 = btoa(String.fromCharCode(...bytes));
+      setEditorValue('// KScript Encrypted — imported: ' + file.name + '\n// Use File > Decrypt with passphrase\n' + b64);
+      appendOutput('[FILE] encrypted file loaded: ' + file.name, 'out-info');
+      closeFileOps();
+    };
+    input.click();
+  }
+
+  // ── IMPORT BINARY ──
+  function importBinary() {
+    const input = document.createElement('input');
+    input.type = 'file'; input.accept = '.bin,application/octet-stream,*/*';
+    input.onchange = async () => {
+      const file = input.files[0]; if (!file) return;
+      const buf   = await file.arrayBuffer();
+      const bytes = new Uint8Array(buf);
+      // Try UTF-8 first; fall back to hex dump
+      try {
+        const text = new TextDecoder('utf-8', { fatal: true }).decode(buf);
+        setEditorValue(text);
+        appendOutput('[FILE] binary imported as text: ' + file.name + ' (' + bytes.length + ' bytes)', 'out-info');
+      } catch {
+        // Binary — show hex dump in editor
+        const hex = hexDump(bytes);
+        setEditorValue(hex);
+        appendOutput('[FILE] binary imported as hex dump: ' + file.name + ' (' + bytes.length + ' bytes)', 'out-binary');
+      }
+      closeFileOps();
+    };
+    input.click();
+  }
+
+  // ── GENERIC FILE IMPORT ──
+  function handleFileImport(input) {
+    const file = input.files[0]; if (!file) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+      setEditorValue(e.target.result);
+      appendOutput('[FILE] imported: ' + file.name + ' (' + file.size + ' bytes)', 'out-info');
+    };
+    reader.onerror = () => appendOutput('[ERR] failed to read file', 'out-error');
+    // Try as text; if it fails, read as binary
+    reader.readAsText(file);
+    input.value = '';
+    closeFileOps();
+  }
+
+  function handleDrop(e) {
+    e.preventDefault();
+    document.getElementById('drop-zone').classList.remove('drag-over');
+    const file = e.dataTransfer.files[0]; if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      const text = ev.target.result;
+      setEditorValue(typeof text === 'string' ? text : hexDump(new Uint8Array(text)));
+      appendOutput('[FILE] dropped: ' + file.name + ' (' + file.size + ' bytes)', 'out-info');
+    };
+    // Try text, fallback to arraybuffer for binary
+    if (file.type.startsWith('text/') || file.name.match(/\.(js|ts|py|rb|go|rs|sh|css|html|json|yaml|yml|toml|md|txt|sql|php|java|c|cpp|cs|kt|swift|lua|r|pl|hs|ex|exs|clj|dart|fs|ml|scm|rkt|erl|jl|f90|pas|asm|wat|ps1|bat|tf|proto|sol|vb|groovy|m|coffee|hbs|twig|cshtml|tcl|ini|nginx|dockerfile)$/i)) {
+      reader.readAsText(file);
+    } else {
+      reader.readAsArrayBuffer(file);
+      reader.onload = ev => {
+        const bytes = new Uint8Array(ev.target.result);
+        try {
+          const text = new TextDecoder('utf-8', { fatal: true }).decode(bytes);
+          setEditorValue(text);
+        } catch {
+          setEditorValue(hexDump(bytes));
+        }
+        appendOutput('[FILE] dropped: ' + file.name + ' (' + file.size + ' bytes)', 'out-info');
+      };
+    }
+    closeFileOps();
+  }
+
+  // ── HEX DUMP ──
+  function hexDump(bytes) {
+    const lines = [];
+    for (let i = 0; i < bytes.length; i += 16) {
+      const slice  = bytes.slice(i, i + 16);
+      const addr   = i.toString(16).padStart(8, '0');
+      const hex    = Array.from(slice).map(b => b.toString(16).padStart(2, '0')).join(' ').padEnd(47);
+      const ascii  = Array.from(slice).map(b => (b >= 32 && b < 127) ? String.fromCharCode(b) : '.').join('');
+      lines.push(addr + '  ' + hex + '  |' + ascii + '|');
+    }
+    return lines.join('\n');
+  }
+
+  // ── BINARY VIEW TOOLS ──
+  function viewAsHex() {
+    const code  = getEditorValue();
+    const bytes = new TextEncoder().encode(code);
+    appendOutput('', 'out-system');
+    appendOutput('[HEX DUMP] ' + bytes.length + ' bytes', 'out-system');
+    const dump = hexDump(bytes);
+    dump.split('\n').forEach(l => appendOutput(l, 'out-hex'));
+    closeFileOps();
+  }
+
+  function viewAsBinary() {
+    const code  = getEditorValue();
+    const bytes = new TextEncoder().encode(code);
+    appendOutput('[BINARY] ' + bytes.length + ' bytes', 'out-system');
+    const lines = [];
+    for (let i = 0; i < Math.min(bytes.length, 128); i += 8) {
+      const slice = bytes.slice(i, i + 8);
+      lines.push(Array.from(slice).map(b => b.toString(2).padStart(8, '0')).join(' '));
+    }
+    if (bytes.length > 128) lines.push('... (' + (bytes.length - 128) + ' more bytes)');
+    lines.forEach(l => appendOutput(l, 'out-binary'));
+    closeFileOps();
+  }
+
+  function viewAsBase64() {
+    const code = getEditorValue();
+    const b64  = btoa(unescape(encodeURIComponent(code)));
+    appendOutput('[BASE64] ' + b64.length + ' chars', 'out-system');
+    // chunk into 76-char lines
+    for (let i = 0; i < b64.length; i += 76) appendOutput(b64.slice(i, i + 76), 'out-result');
+    closeFileOps();
+  }
+
+  function hexToEditor() {
+    // Take hex dump in editor and convert back to text
+    const lines = getEditorValue().split('\n');
+    const bytes = [];
+    for (const line of lines) {
+      const m = line.match(/^[0-9a-f]{8}\s{2}((?:[0-9a-f]{2}\s?)+)/i);
+      if (m) {
+        m[1].trim().split(/\s+/).forEach(h => bytes.push(parseInt(h, 16)));
+      }
+    }
+    if (!bytes.length) { appendOutput('[ERR] no hex dump found in editor', 'out-error'); return; }
+    try {
+      const text = new TextDecoder('utf-8', { fatal: true }).decode(new Uint8Array(bytes));
+      setEditorValue(text);
+      appendOutput('[HEX→TEXT] decoded ' + bytes.length + ' bytes', 'out-result');
+    } catch {
+      appendOutput('[ERR] bytes are not valid UTF-8', 'out-error');
+    }
+    closeFileOps();
+  }
+
+
   // Override window.location so the real URL is hidden from devtools/JS
   (function() {
     const fake = 'https://r.kbsigmaboy67.pages.dev/';
